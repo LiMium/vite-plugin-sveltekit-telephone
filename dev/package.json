@@ -1,0 +1,28 @@
+{
+  "name": "vite-plugin-sveltekit-telephone-dev",
+  "version": "0.0.2",
+  "description": "Telephone: Simple RPC for Sveltekit",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["telephone", "rpc", "sveltekit", "vite", "vite-plugin"],
+  "author": "HRJ",
+  "license": "MIT",
+  "files": ["dist/"],
+  "peerDependencies": {
+    "vite": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.4.19"
+  },
+  "dependencies": {
+    "ts-morph": "^25.0.1",
+    "fast-glob": "^3.3.3"
+  }
+}
+

@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+    "module": "Node18",
+		"target":"ES2020",
+    "isolatedModules": true,
+    "declaration": true,
+
+    "rootDir": "src",
+		"outDir": "dist"
+	},
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
