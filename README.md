@@ -19,7 +19,7 @@ We found `telefunc` to be magical and [hence brittle at times](https://github.co
 
 ## Usage
 
-Usage is very similar to `telefunc`.  See the `examples/` directory for actual code.
+Usage is very similar to `telefunc`.  See the `examples/` directory for a complete project setup.
 
 ### Install
 ```shell
