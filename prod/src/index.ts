@@ -27,6 +27,12 @@ export function getContextOrNull(): Telephone.Context | null {
   }
 }
 
+export function withContext<T>(context: Telephone.Context, fn: () => T): T {
+  return alr.run({context}, () => {
+    return fn()
+  })
+}
+
 export async function handleRoute(functionMap: Record<string, any>, params: HandlerParams): Promise<any> {
   const { filePath, functionName, args } = params.body;
   const availableFunctions = functionMap[filePath];

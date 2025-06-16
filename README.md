@@ -65,6 +65,7 @@ Use `getContext()` to get the context that you can inject via the hanlder for `/
 
 When the RPC functions are called on the server side, they are processed as direct function calls.
 `getContext()` will throw an exception in this case. Use `getContextOrNull()`, which returns null instead of throwing an exception.
+Else, use `withContext(context, fn)` to inject the given context before calling `fn`.
 
 ### Define the context type (optional)
 
