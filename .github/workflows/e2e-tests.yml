@@ -12,10 +12,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # Or your preferred Node.js version
-
-      - name: Install root dependencies (if any)
-        run: npm install --if-present
+          node-version: '20' # Or your preferred Node.js version
 
       - name: Build dev package
         run: npm run build --prefix dev
