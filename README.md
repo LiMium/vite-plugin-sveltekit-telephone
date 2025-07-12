@@ -27,7 +27,18 @@ Usage is very similar to `telefunc`.  See the `examples/` directory for a comple
 npm install --save-dev vite-plugin-sveltekit-telephone-dev
 
 # To install the production time utilities
-npm install --save vite-plugin-sveltekit-telephone-dev
+npm install --save vite-plugin-sveltekit-telephone-prod
+```
+
+### Add the plugin to vite.config.ts
+
+```typescript
+import { telephoneDev } from 'vite-plugin-sveltekit-telephone-dev';
+
+export default defineConfig({
+	plugins: [sveltekit(), telephoneDev.plugin()]
+});
+
 ```
 
 ### Define RPCs
