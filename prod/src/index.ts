@@ -45,10 +45,6 @@ export async function handleRoute(functionMap: Record<string, any>, params: Hand
     const result = await func(...args);
     return { result };
   })
-  /*
-  const result = await (func.call({context: params.context}, ...args));
-  return { result };
-  */
 }
 
 export declare namespace Telephone {
