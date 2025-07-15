@@ -1,85 +1,11 @@
 import axios from 'axios';
-import { spawn, ChildProcess } from 'child_process';
-import * as path from 'path';
+import { describe, it, expect } from 'vitest'
 
 const BASE_URL = 'http://localhost:5173'; // Default Vite port
 const RPC_ENDPOINT = `${BASE_URL}/telephone`;
 
 describe('E2E RPC Tests', () => {
-  let devServer: ChildProcess;
-  let serverReady = false;
-  let serverErrorOutput = '';
-
-  beforeAll((done) => {
-    const testAppDir = path.resolve(__dirname, '../test-app');
-    // Try to run npm install first, then run dev
-    // Note: Due to sandbox limitations, this might not work as expected if npm install fails silently.
-    devServer = spawn('npm', ['run', 'dev'], {
-      cwd: testAppDir,
-      shell: true,
-      stdio: ['ignore', 'pipe', 'pipe'], // ignore stdin, pipe stdout and stderr
-    });
-
-    devServer.stdout?.on('data', (data) => {
-      process.stdout.write(`[test-app server stdout]: ${data}`);
-      if (data.toString().includes('Network')) { // A common message when Vite server is ready
-        serverReady = true;
-        done();
-      }
-    });
-
-    devServer.stderr?.on('data', (data) => {
-      process.stderr.write(`[test-app server stderr]: ${data}`);
-      serverErrorOutput += data.toString();
-      // If server fails to start quickly, call done to not hang tests indefinitely
-      if (serverErrorOutput.includes('ERR_PNPM_RECURSIVE_RUN_FIRST') || serverErrorOutput.includes('error')) {
-        if (!serverReady) { // Only fail if not already ready
-          console.error('Server failed to start or encountered an error quickly.');
-        }
-      }
-    });
-
-    // Failsafe timeout in case server doesn't start or output expected message
-    setTimeout(() => {
-      if (!serverReady) {
-        console.warn("Dev server did not signal readiness within timeout. Proceeding with tests, but they might fail.");
-        done();
-      }
-    }, 25000); // 25 seconds timeout
-  });
-
-  afterAll(() => {
-    return new Promise<void>((resolve) => {
-      if (devServer) {
-        console.log('Stopping dev server...');
-        devServer.on('close', () => {
-          console.log('Dev server stopped.');
-          resolve();
-        });
-        // Try graceful exit first
-        if (devServer.pid) {
-            process.kill(devServer.pid, 'SIGTERM');
-        }
-        // Force kill if not exited after a short delay
-        setTimeout(() => {
-            if (!devServer.killed) {
-                devServer.kill('SIGKILL');
-            }
-        }, 5000);
-      } else {
-        resolve();
-      }
-    });
-  });
-
   const callRpc = async (filePath: string, functionName: string, args: any[]) => {
-    if (!serverReady) {
-      // Wait a bit longer if server wasn't ready during beforeAll
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      if (!serverReady) {
-        throw new Error('Test server is not ready. Aborting RPC call.');
-      }
-    }
     return axios.post(RPC_ENDPOINT, {
       filePath,
       functionName,
