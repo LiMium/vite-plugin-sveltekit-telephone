@@ -62,14 +62,15 @@ function validateArgs(filePath: string, functionName: string, args: any[], expec
   for (let i = 0; i < expectedParams.length; i++) {
     const param = expectedParams[i];
     const arg = args[i];
+    // console.log("Validating param:", param.name, "optional", param.optional, "with type:", param.type, "and arg:", arg);
 
     if (arg === undefined || arg === null) {
       if (param.optional) {
         continue; // Skip validation for optional parameters
       } else {
-      throw new Error(
-        `RPC call to "${filePath}:${functionName}": Argument for '${param.name}' is required but not provided.`
-      );
+        throw new Error(
+          `RPC call to "${filePath}:${functionName}": Argument for '${param.name}' is required but not provided.`
+        );
       }
     }
 
