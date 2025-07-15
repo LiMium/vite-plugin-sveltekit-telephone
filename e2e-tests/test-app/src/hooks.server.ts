@@ -1,4 +1,4 @@
-import { handleRoute } from 'vite-plugin-sveltekit-telephone-prod/server';
+import { handleRoute } from 'vite-plugin-sveltekit-telephone-prod';
 import * as e2eFunctions from '$lib/tele/e2e.telephone';
 
 const functionMap = {

@@ -8,7 +8,7 @@ beforeAll(async () => {
   const testAppDir = path.resolve(__dirname, './test-app');
   await new Promise<void>((resolve, reject) => {
     devServer = spawn('npm', ['run', 'dev'], {
-      cwd: testAppdDir,
+      cwd: testAppDir,
       shell: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -29,7 +29,7 @@ beforeAll(async () => {
     });
 
     setTimeout(() => {
-        reject(new Error("Dev server startup timeout"));
+      reject(new Error("Dev server startup timeout"));
     }, 25000);
   });
 });
@@ -41,13 +41,17 @@ afterAll(() => {
         resolve();
       });
       if (devServer.pid) {
-        process.kill(devServer.pid, 'SIGTERM');
+        try {
+          process.kill(devServer.pid, 'SIGTERM');
+        } catch (err) {
+          console.error('Failed to kill dev server process:', err);
+        }
       }
       setTimeout(() => {
         if (!devServer.killed) {
           devServer.kill('SIGKILL');
         }
-      }, 5000);
+      }, 3000);
     } else {
       resolve();
     }

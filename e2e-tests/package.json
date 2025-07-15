@@ -16,7 +16,7 @@
     "vitest": "^1.2.2"
   },
   "dependencies": {
-    "vite-plugin-sveltekit-telephone-dev": "file:../dev",
-    "vite-plugin-sveltekit-telephone-prod": "file:../prod"
+    "vite-plugin-sveltekit-telephone-dev": "file:../../dev",
+    "vite-plugin-sveltekit-telephone-prod": "file:../../prod"
   }
 }
