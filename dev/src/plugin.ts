@@ -1,7 +1,8 @@
 import type { Plugin } from 'vite';
 import { Project, Node, FunctionDeclaration, ArrowFunction } from 'ts-morph';
 import path from 'path';
-import fs from 'node:fs/promises';
+import fs from 'node:fs';
+import fsAsync from 'node:fs/promises';
 import fg from 'fast-glob'; // For globbing files
 
 const RPC_FILES_GLOB = 'src/**/*.telephone.ts';
@@ -95,10 +96,10 @@ functionMap["${filePath}"] = {`;
     }
 
     const outputDir = path.join(generateDirPath);
-    await fs.mkdir(outputDir, { recursive: true });
+    await fsAsync.mkdir(outputDir, { recursive: true });
 
     const indexPath = path.join(outputDir, 'index.ts');
-    await fs.writeFile(indexPath, output);
+    await fsAsync.writeFile(indexPath, output);
     log("Generated", indexPath)
 
 
