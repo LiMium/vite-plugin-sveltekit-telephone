@@ -37,9 +37,17 @@ beforeAll(async () => {
 function shutdownDevServer(): Promise<void> {
   return new Promise<void>((resolve) => {
     if (devServer) {
+      console.log('Shutting down dev server...');
       devServer.on('close', () => {
+        console.log('Dev server has been shut down');
         resolve();
       });
+      devServer.on('exit', () => {
+        console.log('Dev server process exited');
+        resolve();
+      });
+      devServer.kill('SIGTERM');
+      /*
       if (devServer.pid) {
         try {
           process.kill(devServer.pid, 'SIGTERM');
@@ -54,9 +62,12 @@ function shutdownDevServer(): Promise<void> {
             devServer.kill('SIGKILL');
           } catch (e) {
             // Process is not running, do nothing
+            console.log("Coudn't kill dev server, it might have already exited.");
+            resolve()
           }
         }
       }, 2000);
+      */
     } else {
       resolve();
     }
