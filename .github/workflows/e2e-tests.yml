@@ -1,0 +1,45 @@
+name: E2E Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Or your preferred Node.js version
+
+      - name: Build dev package
+        working-directory: dev
+        run: npm install && npm run build
+
+      - name: Build prod package
+        working-directory: prod
+        run: npm install && npm run build
+
+      - name: Install e2e-tests dependencies (includes test-app links)
+        working-directory: e2e-tests
+        run: npm install
+
+      # Attempt to install test-app dependencies.
+      # This might fail or not work as expected due to file: linking complexities
+      # or if the e2e-tests/test-app/package.json was not fully populated by a SvelteKit scaffold.
+      # However, the crucial part is that e2e-tests itself has its dependencies.
+      - name: Install test-app dependencies (best effort)
+        run: npm install --prefix e2e-tests/test-app --if-present
+        continue-on-error: true # Allow this to fail as it might not be critical if tests can run against linked packages
+
+      - name: Run E2E tests
+        run: npm test --prefix e2e-tests
+        env:
+          CI: true # Common environment variable for CI environments
+          # Add any other environment variables your tests might need
+          # For example, if the server needs to run on a specific port in CI:
+          # PORT: 3000 # Or whatever port your test server is configured for
+        # Increase timeout for the test step if needed, Jest tests with server startup can be slow
+        # timeout-minutes: 15
