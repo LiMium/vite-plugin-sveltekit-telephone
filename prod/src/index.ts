@@ -63,10 +63,14 @@ function validateArgs(filePath: string, functionName: string, args: any[], expec
     const param = expectedParams[i];
     const arg = args[i];
 
-    if (arg === undefined && !param.optional) {
+    if (arg === undefined || arg === null) {
+      if (param.optional) {
+        continue; // Skip validation for optional parameters
+      } else {
       throw new Error(
         `RPC call to "${filePath}:${functionName}": Argument for '${param.name}' is required but not provided.`
       );
+      }
     }
 
     // Basic typeof check for primitives.
