@@ -2,7 +2,7 @@ import axios from 'axios';
 import { describe, it, expect } from 'vitest'
 
 const BASE_URL = 'http://localhost:5173'; // Default Vite port
-const RPC_ENDPOINT = `${BASE_URL}/telephone`;
+const RPC_ENDPOINT = `${BASE_URL}/_telephone`;
 
 describe('E2E RPC Tests', () => {
   const callRpc = async (filePath: string, functionName: string, args: any[]) => {
