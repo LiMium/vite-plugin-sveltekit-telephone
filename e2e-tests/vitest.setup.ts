@@ -34,7 +34,7 @@ beforeAll(async () => {
   });
 });
 
-afterAll(() => {
+function shutdownDevServer(): Promise<void> {
   return new Promise<void>((resolve) => {
     if (devServer) {
       devServer.on('close', () => {
@@ -48,12 +48,21 @@ afterAll(() => {
         }
       }
       setTimeout(() => {
-        if (!devServer.killed) {
-          devServer.kill('SIGKILL');
+        if (!devServer.killed && devServer.pid) {
+          try {
+            process.kill(devServer.pid, 0); // Check if process is running
+            devServer.kill('SIGKILL');
+          } catch (e) {
+            // Process is not running, do nothing
+          }
         }
-      }, 3000);
+      }, 2000);
     } else {
       resolve();
     }
   });
+}
+
+afterAll(() => {
+  return shutdownDevServer();
 });
