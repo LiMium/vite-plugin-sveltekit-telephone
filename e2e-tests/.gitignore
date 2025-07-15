@@ -1,1 +1,2 @@
 node_modules/
+test-app/src/lib/client/_vite-sveltekit-telephone/index.ts
