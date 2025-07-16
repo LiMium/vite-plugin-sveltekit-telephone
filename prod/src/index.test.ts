@@ -1,4 +1,5 @@
-const { validateArgs, TelephoneValidationError } = require('./index');
+import { describe, it, expect } from 'vitest';
+import { validateArgs, TelephoneValidationError } from './validation.js';
 
 describe('validateArgs', () => {
     const filePath = 'test.ts';
@@ -12,20 +13,20 @@ describe('validateArgs', () => {
 
     it('should throw error for missing required argument', () => {
         const params = [{ name: 'a', type: 'string', optional: false }];
-        const args = [];
-        expect(() => validateArgs(filePath, functionName, args, params)).toThrow(TelephoneValidationError);
+        const args: any[] = [];
+        expect(() => validateArgs(filePath, functionName, args, params)).toThrowError(TelephoneValidationError);
     });
 
     it('should not throw error for missing optional argument', () => {
         const params = [{ name: 'a', type: 'string', optional: true }];
-        const args = [];
+        const args: any[] = [];
         expect(() => validateArgs(filePath, functionName, args, params)).not.toThrow();
     });
 
     it('should throw error for wrong type', () => {
         const params = [{ name: 'a', type: 'string', optional: false }];
         const args = [123];
-        expect(() => validateArgs(filePath, functionName, args, params)).toThrow(TelephoneValidationError);
+        expect(() => validateArgs(filePath, functionName, args, params)).toThrowError(TelephoneValidationError);
     });
 
     it('should not throw error for valid array type', () => {
@@ -37,7 +38,7 @@ describe('validateArgs', () => {
     it('should throw error for invalid array type', () => {
         const params = [{ name: 'a', type: 'string[]', optional: false }];
         const args = [['hello', 123]];
-        expect(() => validateArgs(filePath, functionName, args, params)).toThrow(TelephoneValidationError);
+        expect(() => validateArgs(filePath, functionName, args, params)).toThrowError(TelephoneValidationError);
     });
 
     it('should not throw error for valid object type', () => {
@@ -49,7 +50,7 @@ describe('validateArgs', () => {
     it('should throw error for invalid object type', () => {
         const params = [{ name: 'a', type: 'object', optional: false }];
         const args = ['not an object'];
-        expect(() => validateArgs(filePath, functionName, args, params)).toThrow(TelephoneValidationError);
+        expect(() => validateArgs(filePath, functionName, args, params)).toThrowError(TelephoneValidationError);
     });
 
     it('should handle nested arrays correctly', () => {
@@ -61,6 +62,6 @@ describe('validateArgs', () => {
     it('should throw error for invalid nested array', () => {
         const params = [{ name: 'a', type: 'string[][]', optional: false }];
         const args = [[['a'], [1]]];
-        expect(() => validateArgs(filePath, functionName, args, params)).toThrow(TelephoneValidationError);
+        expect(() => validateArgs(filePath, functionName, args, params)).toThrowError(TelephoneValidationError);
     });
 });
