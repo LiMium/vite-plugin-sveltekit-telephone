@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-sveltekit-telephone-prod",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "Telephone: Simple RPC for Sveltekit",
   "exports": {
     "." : "./dist/index.js",
