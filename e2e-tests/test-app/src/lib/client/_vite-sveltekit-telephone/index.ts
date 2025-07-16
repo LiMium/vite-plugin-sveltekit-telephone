@@ -5,7 +5,7 @@
 // Type definition for parameter info
 export interface ParamInfo {
   name: string;
-  type: string;
+  type: string|object;
   optional: boolean;
 }
 
@@ -24,7 +24,7 @@ functionMap["src/lib/tele/e2e.telephone.ts"] = {
   "errorFunction": { fn: m0.errorFunction, params: [] },
   "functionWithNoArgs": { fn: m0.functionWithNoArgs, params: [] },
   "functionWithOptionalArg": { fn: m0.functionWithOptionalArg, params: [{"name":"name","type":"string","optional":true}] },
-  "processObject": { fn: m0.processObject, params: [{"name":"data","type":"{ name: string; age: number }","optional":false}] },
+  "processObject": { fn: m0.processObject, params: [{"name":"data","type":{"name":"string","age":"number"},"optional":false}] },
   "processArray": { fn: m0.processArray, params: [{"name":"data","type":"string[]","optional":false}] },
-  "processMixed": { fn: m0.processMixed, params: [{"name":"data","type":"{ user: { name: string }; roles: string[] }","optional":false}] },
+  "processMixed": { fn: m0.processMixed, params: [{"name":"data","type":{"user":{"name":"string"},"roles":"string[]"},"optional":false}] },
 };

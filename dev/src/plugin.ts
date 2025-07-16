@@ -10,7 +10,7 @@ const RPC_FILES_GLOB = 'src/**/*.telephone.ts';
 // Parameter information for server-side validation
 interface ParamInfo {
   name: string;
-  type: string;
+  type: string | object;
   optional: boolean;
 }
 
@@ -55,7 +55,7 @@ export default function plugin(config: Config = {debug: false}): Plugin {
 // Type definition for parameter info
 export interface ParamInfo {
   name: string;
-  type: string;
+  type: string|object;
   optional: boolean;
 }
 
@@ -222,9 +222,11 @@ export async function ${efInfo.name}(${efInfo.clientParameterStr}) {
 
       if (funcNode) {
         const params: ParamInfo[] = funcNode.getParameters().map(p => {
+          const paramType = p.getTypeNode()?.getText();
+          const type = paramType ? transformTypeToJson(paramType) : "any";
           return {
             name: p.getName(),
-            type: p.getTypeNode()?.getText() || 'any',
+            type,
             optional: p.hasQuestionToken() || p.isOptional() || p.isRestParameter() || !!p.getInitializer(),
           };
         });
@@ -263,4 +265,52 @@ async function makeSpecificRpcCall(functionName, args) {
     return await makeRpcCall(filePath, functionName, args)
 }
 `;
+}
+
+export function transformTypeToJson(typeStr: string): string | object {
+  const trimmed = typeStr.trim();
+  
+  // Handle basic types directly
+  if (!trimmed.includes('{') && !trimmed.includes('<')) {
+    return trimmed;
+  }
+
+  // Handle object types
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    const inner = trimmed.slice(1, -1);
+    const returnObject: Record<string, any> = {};
+    
+    let depth = 0;
+    let currentPair = '';
+    
+    // Parse with nested structure awareness
+    for (let i = 0; i < inner.length; i++) {
+      const char = inner[i];
+      if (char === '{') depth++;
+      if (char === '}') depth--;
+      
+      if ((char === ',' || char === ';') && depth === 0) {
+        processPair(currentPair, returnObject);
+        currentPair = '';
+      } else {
+        currentPair += char;
+      }
+    }
+    if (currentPair) {
+      processPair(currentPair, returnObject);
+    }
+    
+    return returnObject;
+  }
+
+  return typeStr;
+}
+
+function processPair(pair: string, obj: Record<string, any>) {
+  const colonIndex = pair.indexOf(':');
+  const key = pair.slice(0, colonIndex).trim();
+  const value = pair.slice(colonIndex + 1).trim();
+  if (key && value) {
+    obj[key] = transformTypeToJson(value);
+  }
 }

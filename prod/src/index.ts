@@ -2,9 +2,9 @@ import { AsyncLocalStorage } from "async_hooks";
 
 // Definition for parameter info, mirroring the one in dev/src/plugin.ts
 // This is used by the validation logic.
-interface ParamInfo {
+export interface ParamInfo {
   name: string;
-  type: string;
+  type: string | object;
   optional: boolean;
 }
 
@@ -38,6 +38,86 @@ export class TelephoneValidationError extends TelephoneError {
   }
 }
 
+function validateType(expectedType: string | Record<string,any>, arg: any, filePath: string, functionName: string, paramName: string): void {
+  if (expectedType === 'any' || arg === undefined || arg === null) {
+    return; // Skip validation for 'any' type or null/undefined arguments
+  }
+
+  const argType = typeof arg;
+
+  if (typeof(expectedType) === 'object') {
+    if(argType === 'object' && !Array.isArray(arg)) {
+      if (arg === null || Array.isArray(arg)) {
+        throw new TelephoneValidationError(
+          `RPC call to "${filePath}:${functionName}": Argument '${paramName}' expected type '${expectedType}' but got '${argType}'.`
+        );
+      } else {
+        for (const key of Object.keys(expectedType)) {
+          if (!(key in arg)) {
+            throw new TelephoneValidationError(
+              `RPC call to "${filePath}:${functionName}": Missing property '${key}' in argument '${paramName}'.`
+            );
+          }
+          validateType(expectedType[key], arg[key], filePath, functionName, `${paramName}.${key}`);
+        }
+      }
+    } else {
+      throw new TelephoneValidationError(
+        `RPC call to "${filePath}:${functionName}": Argument '${paramName}' expected type '${expectedType}' but got '${argType}'.`
+      );
+    }
+  } else if (expectedType.endsWith('[]')) {
+    if (!Array.isArray(arg)) {
+      throw new TelephoneValidationError(
+        `RPC call to "${filePath}:${functionName}": Argument '${paramName}' expected type '${expectedType}' but got '${argType}'.`
+      );
+    }
+    // Recursively validate each item in the array
+    const itemType = expectedType.slice(0, -2);
+    for (const item of arg) {
+      validateType(itemType, item, filePath, functionName, paramName);
+    }
+  } else if (
+    (expectedType === 'string' && argType === 'string') ||
+    (expectedType === 'number' && argType === 'number') ||
+    (expectedType === 'boolean' && argType === 'boolean')
+  ) {
+    // Valid types, do nothing
+  } else {
+    throw new TelephoneValidationError(
+      `RPC call to "${filePath}:${functionName}": Argument '${paramName}' expected type '${expectedType}' but got '${argType}'.`
+    );
+  }
+}
+
+export function validateArgs(filePath: string, functionName: string, args: any[], expectedParams: ParamInfo[]): void {
+  const minExpectedArgs = expectedParams.filter(p => !p.optional).length;
+  const maxExpectedArgs = expectedParams.length;
+
+  if (args.length < minExpectedArgs || args.length > maxExpectedArgs) {
+    throw new TelephoneValidationError(
+      `RPC call to "${filePath}:${functionName}": Expected ${
+        minExpectedArgs === maxExpectedArgs ? maxExpectedArgs : `${minExpectedArgs}-${maxExpectedArgs}`
+      } arguments, but got ${args.length}.`
+    );
+  }
+
+  for (const [i, param] of expectedParams.entries()) {
+    const arg = args[i];
+
+    if (arg === undefined || arg === null) {
+      if (param.optional) {
+        continue;
+      } else {
+        throw new TelephoneValidationError(
+          `RPC call to "${filePath}:${functionName}": Argument for '${param.name}' is required but not provided.`
+        );
+      }
+    }
+
+    validateType(param.type, arg, filePath, functionName, param.name);
+  }
+}
 const alr = new AsyncLocalStorage();
 
 export function getContext(): Telephone.Context {
@@ -62,62 +142,6 @@ export function withContext<T>(context: Telephone.Context, fn: () => T): T {
   return alr.run({context}, () => {
     return fn()
   })
-}
-
-function validateArgs(filePath: string, functionName: string, args: any[], expectedParams: ParamInfo[]): void {
-  const minExpectedArgs = expectedParams.filter(p => !p.optional).length;
-  const maxExpectedArgs = expectedParams.length;
-
-  if (args.length < minExpectedArgs || args.length > maxExpectedArgs) {
-    throw new TelephoneValidationError(
-      `RPC call to "${filePath}:${functionName}": Expected ${
-        minExpectedArgs === maxExpectedArgs ? maxExpectedArgs : `${minExpectedArgs}-${maxExpectedArgs}`
-      } arguments, but got ${args.length}.`
-    );
-  }
-
-  for (let i = 0; i < expectedParams.length; i++) {
-    const param = expectedParams[i];
-    const arg = args[i];
-    // console.log("Validating param:", param.name, "optional", param.optional, "with type:", param.type, "and arg:", arg);
-
-    if (arg === undefined || arg === null) {
-      if (param.optional) {
-        continue; // Skip validation for optional parameters
-      } else {
-        throw new TelephoneValidationError(
-          `RPC call to "${filePath}:${functionName}": Argument for '${param.name}' is required but not provided.`
-        );
-      }
-    }
-
-    // Basic typeof check for primitives.
-    // 'any' or complex types like 'MyInterface[]' or 'string | number' won't be strictly validated here.
-    // This is a best-effort validation.
-    if (arg !== undefined && param.type !== 'any') {
-      const argType = typeof arg;
-      // Allow 'object' for arrays as typeof [] is 'object'
-      if (param.type.endsWith('[]') && argType === 'object' && Array.isArray(arg)) {
-        // Could go deeper and check array item types, but keeping it simple for now.
-      } else if (
-        (param.type === 'string' && argType !== 'string') ||
-        (param.type === 'number' && argType !== 'number') ||
-        (param.type === 'boolean' && argType !== 'boolean') ||
-        (param.type === 'object' && argType !== 'object' && !Array.isArray(arg)) // typeof null is 'object', which is fine.
-      ) {
-        // More specific error for arrays if type was like 'string[]' but got e.g. 'number[]'
-        if (param.type.endsWith('[]') && !(argType === 'object' && Array.isArray(arg))) {
-           throw new TelephoneValidationError(
-            `RPC call to "${filePath}:${functionName}": Argument '${param.name}' expected type '${param.type}' but got '${Array.isArray(arg) ? "array" : argType}'.`
-          );
-        } else if (!param.type.endsWith('[]')) {
-           throw new TelephoneValidationError(
-            `RPC call to "${filePath}:${functionName}": Argument '${param.name}' expected type '${param.type}' but got '${argType}'.`
-          );
-        }
-      }
-    }
-  }
 }
 
 export async function handleRoute(functionMap: Record<string, Record<string, FunctionDetail>>, params: HandlerParams): Promise<any> {

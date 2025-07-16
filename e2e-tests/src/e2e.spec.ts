@@ -7,11 +7,21 @@ const TEST_FILE_PATH = 'src/lib/tele/e2e.telephone.ts';
 
 describe('E2E RPC Tests', () => {
   const callRpc = async (functionName: string, args: any[]) => {
-    return await axios.post(RPC_ENDPOINT, {
-      filePath: TEST_FILE_PATH,
-      functionName,
-      args,
-    });
+    try {
+      return await axios.post(RPC_ENDPOINT, {
+        filePath: TEST_FILE_PATH,
+        functionName,
+        args,
+      }).catch((error) => {;
+        return error.response;
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw error; // Re-throw to handle in the test
+      } else {
+        throw new Error('Unexpected error during RPC call');
+      }
+    }
   };
 
   it('should call hello function and get a greeting', async () => {
@@ -52,7 +62,7 @@ describe('E2E RPC Tests', () => {
       const response: AxiosResponse = error.response;
       expect(response.status).toBeGreaterThanOrEqual(400); // Or specifically 500 if that's what prod returns
       expect(response.data).toBeDefined();
-      expect(response.data.message).toBe("Error")
+      expect(response.data.message).toMatch(/^Error:This is a test error$/);
     }
   });
 
@@ -65,7 +75,7 @@ describe('E2E RPC Tests', () => {
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toBeDefined();
       console.log("data", response.data);
-      expect(response.data.message).toBe("Error")
+      expect(response.data.message).toMatch(/^Error:.*not found or is not a function.$/)
     }
   });
 
@@ -79,7 +89,7 @@ describe('E2E RPC Tests', () => {
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toBeDefined();
       console.log("data", response.data);
-      expect(response.data.message).toBe("Error")
+      expect(response.data.message).toMatch(/^Error:.*Argument 'name' expected type 'string' but got 'number'.$/)
     }
   });
 
@@ -93,7 +103,7 @@ describe('E2E RPC Tests', () => {
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toBeDefined();
       console.log("data", response.data);
-      expect(response.data.message).toBe("Error")
+      expect(response.data.message).toMatch(/^Error:.*Argument 'b' expected type 'number' but got 'string'.$/)
     }
   });
 
@@ -106,7 +116,7 @@ describe('E2E RPC Tests', () => {
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toBeDefined();
       console.log("data", response.data);
-      expect(response.data.message).toBe("Error")
+      expect(response.data.message).toMatch(/^Error:.* Expected 2 arguments, but got 1./)
     }
   });
 
@@ -130,27 +140,25 @@ describe('E2E RPC Tests', () => {
 
   it('should handle invalid object structure', async () => {
     const response = await callRpc('processObject', [{ wrongField: 'John Doe' }]);
-    console.log(response.status)
-    console.log(response.data)
     expect(response.status).toBeGreaterThanOrEqual(400);
-    expect(response.data.result).toMatch(/^Error:/);
+    expect(response.data.message).toMatch(/^Error:.* Missing property 'name' in argument.*$/);
   });
 
   it('should handle non-object argument for object function', async () => {
     const response = await callRpc('processObject', ["not an object"]);
     expect(response.status).toBeGreaterThanOrEqual(400);
-    expect(response.data.result).toMatch(/^Error:/);
+    expect(response.data.message).toMatch(/^Error:/);
   });
 
   it('should handle non-array argument for array function', async () => {
     const response = await callRpc('processArray', [{ notAnArray: true }]);
     expect(response.status).toBeGreaterThanOrEqual(400);
-    expect(response.data.result).toMatch(/^Error:/);
+    expect(response.data.message).toMatch(/^Error:/);
   });
 
   it('should handle invalid mixed object structure', async () => {
     const response = await callRpc('processMixed', [{ user: 'not an object', roles: 'not an array' }]);
     expect(response.status).toBeGreaterThanOrEqual(400);
-    expect(response.data.result).toMatch(/^Error:/);
+    expect(response.data.message).toMatch(/^Error:/);
   });
 });
