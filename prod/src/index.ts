@@ -21,6 +21,23 @@ export interface HandlerParams {
   context: Telephone.Context
 }
 
+export class TelephoneError extends Error {
+  constructor(message: string, public cause?: unknown) {
+    super(message);
+    this.name = 'TelephoneError';
+    if (cause) {
+      this.cause = cause;
+    }
+  }
+}
+
+export class TelephoneValidationError extends TelephoneError {
+  constructor(message: string, public cause?: unknown) {
+    super(message, cause);
+    this.name = 'TelephoneValidationError';
+  }
+}
+
 const alr = new AsyncLocalStorage();
 
 export function getContext(): Telephone.Context {
@@ -52,7 +69,7 @@ function validateArgs(filePath: string, functionName: string, args: any[], expec
   const maxExpectedArgs = expectedParams.length;
 
   if (args.length < minExpectedArgs || args.length > maxExpectedArgs) {
-    throw new Error(
+    throw new TelephoneValidationError(
       `RPC call to "${filePath}:${functionName}": Expected ${
         minExpectedArgs === maxExpectedArgs ? maxExpectedArgs : `${minExpectedArgs}-${maxExpectedArgs}`
       } arguments, but got ${args.length}.`
@@ -68,7 +85,7 @@ function validateArgs(filePath: string, functionName: string, args: any[], expec
       if (param.optional) {
         continue; // Skip validation for optional parameters
       } else {
-        throw new Error(
+        throw new TelephoneValidationError(
           `RPC call to "${filePath}:${functionName}": Argument for '${param.name}' is required but not provided.`
         );
       }
@@ -90,11 +107,11 @@ function validateArgs(filePath: string, functionName: string, args: any[], expec
       ) {
         // More specific error for arrays if type was like 'string[]' but got e.g. 'number[]'
         if (param.type.endsWith('[]') && !(argType === 'object' && Array.isArray(arg))) {
-           throw new Error(
+           throw new TelephoneValidationError(
             `RPC call to "${filePath}:${functionName}": Argument '${param.name}' expected type '${param.type}' but got '${Array.isArray(arg) ? "array" : argType}'.`
           );
         } else if (!param.type.endsWith('[]')) {
-           throw new Error(
+           throw new TelephoneValidationError(
             `RPC call to "${filePath}:${functionName}": Argument '${param.name}' expected type '${param.type}' but got '${argType}'.`
           );
         }
@@ -103,18 +120,17 @@ function validateArgs(filePath: string, functionName: string, args: any[], expec
   }
 }
 
-
 export async function handleRoute(functionMap: Record<string, Record<string, FunctionDetail>>, params: HandlerParams): Promise<any> {
   const { filePath, functionName, args } = params.body;
 
   const fileFunctions = functionMap[filePath];
   if (!fileFunctions) {
-    throw new Error(`RPC filePath "${filePath}" not found.`);
+    throw new TelephoneError(`RPC filePath "${filePath}" not found.`);
   }
 
   const functionEntry = fileFunctions[functionName];
   if (!functionEntry || typeof functionEntry.fn !== 'function') {
-    throw new Error(`RPC function "${filePath}:${functionName}" not found or is not a function.`);
+    throw new TelephoneError(`RPC function "${filePath}:${functionName}" not found or is not a function.`);
   }
 
   // Validate arguments
