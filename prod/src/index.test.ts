@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateArgs, TelephoneValidationError } from './validation.js';
+import { validateArgs, TelephoneValidationError } from './index.js';
 
 describe('validateArgs', () => {
     const filePath = 'test.ts';
@@ -42,7 +42,7 @@ describe('validateArgs', () => {
     });
 
     it('should not throw error for valid object type', () => {
-        const params = [{ name: 'a', type: 'object', optional: false }];
+        const params = [{ name: 'a', type: {"key": "string"}, optional: false }];
         const args = [{ key: 'value' }];
         expect(() => validateArgs(filePath, functionName, args, params)).not.toThrow();
     });
