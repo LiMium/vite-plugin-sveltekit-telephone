@@ -1,5 +1,5 @@
 import { beforeAll, afterAll } from 'vitest'
-import { spawn, ChildProcess } from 'child_process'
+import { spawn, ChildProcess, execSync } from 'child_process'
 import * as path from 'path'
 
 let devServer: ChildProcess;
@@ -7,6 +7,19 @@ let devServer: ChildProcess;
 beforeAll(async () => {
   const testAppDir = path.resolve(__dirname, './test-app');
   await new Promise<void>((resolve, reject) => {
+    // Build dev/
+    execSync('npm run build', {
+      cwd: path.resolve(__dirname, '../dev'),
+      stdio: 'inherit',
+    });
+
+    // Build prod/
+    execSync('npm run build', {
+      cwd: path.resolve(__dirname, '../prod'),
+      stdio: 'inherit',
+    });
+
+
     devServer = spawn('npm', ['run', 'dev'], {
       cwd: testAppDir,
       shell: true,
