@@ -15,7 +15,7 @@ We found `telefunc` to be magical and [hence brittle at times](https://github.co
 - Not battle tested yet
 - Only supports typescript, not javascript
 - Doesn't intend to cover all use-cases, frameworks
-- Runtime Shield for arguments is TBD. See issue [#1](https://github.com/LiMium/vite-plugin-sveltekit-telephone/issues/1)
+- A Basic Runtime Shield for arguments exists, but a complete shield is TBD. See issue [#1](https://github.com/LiMium/vite-plugin-sveltekit-telephone/issues/1)
 
 ## Usage
 
