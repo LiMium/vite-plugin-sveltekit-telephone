@@ -78,12 +78,10 @@ function validateType(expectedType: string | Record<string,any>, arg: any, fileP
       validateType(itemType, item, filePath, functionName, paramName);
     }
   } else if (
-    (expectedType === 'string' && argType === 'string') ||
-    (expectedType === 'number' && argType === 'number') ||
-    (expectedType === 'boolean' && argType === 'boolean')
+    (expectedType === 'string' && argType !== 'string') ||
+    (expectedType === 'number' && argType !== 'number') ||
+    (expectedType === 'boolean' && argType !== 'boolean')
   ) {
-    // Valid types, do nothing
-  } else {
     throw new TelephoneValidationError(
       `RPC call to "${filePath}:${functionName}": Argument '${paramName}' expected type '${expectedType}' but got '${argType}'.`
     );
