@@ -47,33 +47,16 @@ function shutdownDevServer(): Promise<void> {
         resolve();
       });
       devServer.kill('SIGTERM');
-      /*
-      if (devServer.pid) {
-        try {
-          process.kill(devServer.pid, 'SIGTERM');
-        } catch (err) {
-          console.error('Failed to kill dev server process:', err);
-        }
-      }
-      setTimeout(() => {
-        if (!devServer.killed && devServer.pid) {
-          try {
-            process.kill(devServer.pid, 0); // Check if process is running
-            devServer.kill('SIGKILL');
-          } catch (e) {
-            // Process is not running, do nothing
-            console.log("Coudn't kill dev server, it might have already exited.");
-            resolve()
-          }
-        }
-      }, 2000);
-      */
     } else {
       resolve();
     }
   });
 }
 
-afterAll(() => {
-  return shutdownDevServer();
+afterAll(async () => {
+  try {
+    return await shutdownDevServer();
+  } catch (error) {
+    console.error('Error shutting down dev server:', error);
+  }
 });
