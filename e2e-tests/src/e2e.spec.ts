@@ -108,4 +108,22 @@ describe('E2E RPC Tests', () => {
       expect(response.data.message).toBe("Internal Error")
     }
   });
+
+  it('should handle object arguments', async () => {
+    const response = await callRpc('src/lib/tele/e2e.telephone.ts', 'processObject', [{ name: 'John Doe', age: 30 }]);
+    expect(response.status).toBe(200);
+    expect(response.data.result).toBe('Received object for John Doe who is 30 years old.');
+  });
+
+  it('should handle array arguments', async () => {
+    const response = await callRpc('src/lib/tele/e2e.telephone.ts', 'processArray', [['apple', 'banana', 'cherry']]);
+    expect(response.status).toBe(200);
+    expect(response.data.result).toBe('Received array with items: apple, banana, cherry.');
+  });
+
+  it('should handle mixed object and array arguments', async () => {
+    const response = await callRpc('src/lib/tele/e2e.telephone.ts', 'processMixed', [{ user: { name: 'Jane Doe' }, roles: ['admin', 'editor'] }]);
+    expect(response.status).toBe(200);
+    expect(response.data.result).toBe('User Jane Doe has roles: admin, editor.');
+  });
 });

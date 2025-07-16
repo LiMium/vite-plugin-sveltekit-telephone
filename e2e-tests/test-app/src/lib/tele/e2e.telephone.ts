@@ -17,3 +17,17 @@ export async function functionWithNoArgs(): Promise<string> {
 export async function functionWithOptionalArg(name?: string): Promise<string> {
   return `Hello, ${name || 'world'}!`;
 }
+
+export async function processObject(data: { name: string; age: number }): Promise<string> {
+	return `Received object for ${data.name} who is ${data.age} years old.`;
+}
+
+export async function processArray(data: string[]): Promise<string> {
+	return `Received array with items: ${data.join(', ')}.`;
+}
+
+export async function processMixed(
+	data: { user: { name: string }; roles: string[] }
+): Promise<string> {
+	return `User ${data.user.name} has roles: ${data.roles.join(', ')}.`;
+}
