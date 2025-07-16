@@ -64,6 +64,43 @@ export function withContext<T>(context: Telephone.Context, fn: () => T): T {
   })
 }
 
+function validateType(expectedType: string, arg: any, filePath: string, functionName: string, paramName: string): void {
+  if (expectedType === 'any' || arg === undefined || arg === null) {
+    return; // Skip validation for 'any' type or null/undefined arguments
+  }
+
+  const argType = typeof arg;
+
+  if (expectedType.endsWith('[]')) {
+    if (!Array.isArray(arg)) {
+      throw new TelephoneValidationError(
+        `RPC call to "${filePath}:${functionName}": Argument '${paramName}' expected type '${expectedType}' but got '${argType}'.`
+      );
+    }
+    // Recursively validate each item in the array
+    const itemType = expectedType.slice(0, -2);
+    for (const item of arg) {
+      validateType(itemType, item, filePath, functionName, paramName);
+    }
+  } else if (expectedType === 'object') {
+    if (argType !== 'object' || Array.isArray(arg)) {
+      throw new TelephoneValidationError(
+        `RPC call to "${filePath}:${functionName}": Argument '${paramName}' expected type '${expectedType}' but got '${argType}'.`
+      );
+    }
+    // For generic objects, we can't do much more without a detailed type definition (e.g., from a class or interface).
+    // The current implementation validates that it is an object but not its structure.
+  } else if (
+    (expectedType === 'string' && argType !== 'string') ||
+    (expectedType === 'number' && argType !== 'number') ||
+    (expectedType === 'boolean' && argType !== 'boolean')
+  ) {
+    throw new TelephoneValidationError(
+      `RPC call to "${filePath}:${functionName}": Argument '${paramName}' expected type '${expectedType}' but got '${argType}'.`
+    );
+  }
+}
+
 function validateArgs(filePath: string, functionName: string, args: any[], expectedParams: ParamInfo[]): void {
   const minExpectedArgs = expectedParams.filter(p => !p.optional).length;
   const maxExpectedArgs = expectedParams.length;
@@ -79,11 +116,10 @@ function validateArgs(filePath: string, functionName: string, args: any[], expec
   for (let i = 0; i < expectedParams.length; i++) {
     const param = expectedParams[i];
     const arg = args[i];
-    // console.log("Validating param:", param.name, "optional", param.optional, "with type:", param.type, "and arg:", arg);
 
     if (arg === undefined || arg === null) {
       if (param.optional) {
-        continue; // Skip validation for optional parameters
+        continue;
       } else {
         throw new TelephoneValidationError(
           `RPC call to "${filePath}:${functionName}": Argument for '${param.name}' is required but not provided.`
@@ -91,32 +127,7 @@ function validateArgs(filePath: string, functionName: string, args: any[], expec
       }
     }
 
-    // Basic typeof check for primitives.
-    // 'any' or complex types like 'MyInterface[]' or 'string | number' won't be strictly validated here.
-    // This is a best-effort validation.
-    if (arg !== undefined && param.type !== 'any') {
-      const argType = typeof arg;
-      // Allow 'object' for arrays as typeof [] is 'object'
-      if (param.type.endsWith('[]') && argType === 'object' && Array.isArray(arg)) {
-        // Could go deeper and check array item types, but keeping it simple for now.
-      } else if (
-        (param.type === 'string' && argType !== 'string') ||
-        (param.type === 'number' && argType !== 'number') ||
-        (param.type === 'boolean' && argType !== 'boolean') ||
-        (param.type === 'object' && argType !== 'object' && !Array.isArray(arg)) // typeof null is 'object', which is fine.
-      ) {
-        // More specific error for arrays if type was like 'string[]' but got e.g. 'number[]'
-        if (param.type.endsWith('[]') && !(argType === 'object' && Array.isArray(arg))) {
-           throw new TelephoneValidationError(
-            `RPC call to "${filePath}:${functionName}": Argument '${param.name}' expected type '${param.type}' but got '${Array.isArray(arg) ? "array" : argType}'.`
-          );
-        } else if (!param.type.endsWith('[]')) {
-           throw new TelephoneValidationError(
-            `RPC call to "${filePath}:${functionName}": Argument '${param.name}' expected type '${param.type}' but got '${argType}'.`
-          );
-        }
-      }
-    }
+    validateType(param.type, arg, filePath, functionName, param.name);
   }
 }
 

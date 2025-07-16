@@ -8,16 +8,20 @@
     "./client.d.ts": "./dist/client.d.ts"
   },
   "types": "dist/index.d.ts",
-  "type": "module",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest"
   },
   "keywords": ["telephone", "rpc", "sveltekit", "vite", "vite-plugin"],
   "author": "HRJ",
   "license": "MIT",
   "files": ["dist/"],
   "devDependencies": {
+    "@types/jest": "^29.5.11",
     "@types/node": "^20.10.5",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
 }
