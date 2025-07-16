@@ -1,27 +1,33 @@
-export function hello(name: string): string {
-  if (typeof name !== 'string') {
-    // @ts-ignore
-    throw new Error(`Invalid argument type for name: expected string, got ${typeof name}`);
-  }
+export async function hello(name: string): Promise<string> {
   return `Hello, ${name}!`;
 }
 
 export async function add(a: number, b: number): Promise<number> {
-  if (typeof a !== 'number' || typeof b !== 'number') {
-    // @ts-ignore
-    throw new Error('Invalid arguments: a and b must be numbers');
-  }
   return a + b;
 }
 
-export function errorFunction(): void {
+export async function errorFunction(): Promise<void> {
   throw new Error('This is a test error');
 }
 
-export function functionWithNoArgs(): string {
+export async function functionWithNoArgs(): Promise<string> {
   return "No arguments here!";
 }
 
-export function functionWithOptionalArg(name?: string): string {
+export async function functionWithOptionalArg(name?: string): Promise<string> {
   return `Hello, ${name || 'world'}!`;
+}
+
+export async function processObject(data: { name: string; age: number }): Promise<string> {
+	return `Received object for ${data.name} who is ${data.age} years old.`;
+}
+
+export async function processArray(data: string[]): Promise<string> {
+	return `Received array with items: ${data.join(', ')}.`;
+}
+
+export async function processMixed(
+	data: { user: { name: string }; roles: string[] }
+): Promise<string> {
+	return `User ${data.user.name} has roles: ${data.roles.join(', ')}.`;
 }

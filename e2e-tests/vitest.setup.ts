@@ -1,5 +1,5 @@
 import { beforeAll, afterAll } from 'vitest'
-import { spawn, ChildProcess } from 'child_process'
+import { spawn, ChildProcess, execSync } from 'child_process'
 import * as path from 'path'
 
 let devServer: ChildProcess;
@@ -7,6 +7,19 @@ let devServer: ChildProcess;
 beforeAll(async () => {
   const testAppDir = path.resolve(__dirname, './test-app');
   await new Promise<void>((resolve, reject) => {
+    // Build dev/
+    execSync('npm run build', {
+      cwd: path.resolve(__dirname, '../dev'),
+      stdio: 'inherit',
+    });
+
+    // Build prod/
+    execSync('npm run build', {
+      cwd: path.resolve(__dirname, '../prod'),
+      stdio: 'inherit',
+    });
+
+
     devServer = spawn('npm', ['run', 'dev'], {
       cwd: testAppDir,
       shell: true,
@@ -37,32 +50,26 @@ beforeAll(async () => {
 function shutdownDevServer(): Promise<void> {
   return new Promise<void>((resolve) => {
     if (devServer) {
+      console.log('Shutting down dev server...');
       devServer.on('close', () => {
+        console.log('Dev server has been shut down');
         resolve();
       });
-      if (devServer.pid) {
-        try {
-          process.kill(devServer.pid, 'SIGTERM');
-        } catch (err) {
-          console.error('Failed to kill dev server process:', err);
-        }
-      }
-      setTimeout(() => {
-        if (!devServer.killed && devServer.pid) {
-          try {
-            process.kill(devServer.pid, 0); // Check if process is running
-            devServer.kill('SIGKILL');
-          } catch (e) {
-            // Process is not running, do nothing
-          }
-        }
-      }, 2000);
+      devServer.on('exit', () => {
+        console.log('Dev server process exited');
+        resolve();
+      });
+      devServer.kill('SIGTERM');
     } else {
       resolve();
     }
   });
 }
 
-afterAll(() => {
-  return shutdownDevServer();
+afterAll(async () => {
+  try {
+    return await shutdownDevServer();
+  } catch (error) {
+    console.error('Error shutting down dev server:', error);
+  }
 });

@@ -22,6 +22,10 @@ jobs:
         working-directory: prod
         run: npm install && npm run build
 
+      - name: Build test app
+        working-directory: e2e-tests/test-app
+        run: npm install && npm run build
+
       - name: Install e2e-tests dependencies (includes test-app links)
         working-directory: e2e-tests
         run: npm install
