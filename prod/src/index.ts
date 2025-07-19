@@ -103,7 +103,7 @@ export function validateArgs(filePath: string, functionName: string, args: any[]
   for (const [i, param] of expectedParams.entries()) {
     const arg = args[i];
 
-    if (arg === undefined || arg === null) {
+    if (arg === undefined) {
       if (param.optional) {
         continue;
       } else {
