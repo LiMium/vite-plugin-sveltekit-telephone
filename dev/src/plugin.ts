@@ -262,7 +262,7 @@ import { makeRpcCall } from 'vite-plugin-sveltekit-telephone-prod/client';
 const filePath = ${JSON.stringify(filePath)}
 
 async function makeSpecificRpcCall(functionName, args) {
-    return await makeRpcCall(filePath, functionName, args)
+  return await makeRpcCall(filePath, functionName, args)
 }
 `;
 }
