@@ -54,6 +54,12 @@ describe('E2E RPC Tests', () => {
     expect(response.data.result).toBe('Hello, world!');
   });
 
+  it('should call functionWithOptionalArg with null arg and get an error', async () => {
+    const response = await callRpc('functionWithOptionalArg', [null]);
+    expect(response.status).toBe(500);
+    expect(response.data.message).toBe('Error:Unexpected type of name:null');
+  });
+
   it('should handle errors from the RPC function', async () => {
     try {
       await callRpc('errorFunction', []);
