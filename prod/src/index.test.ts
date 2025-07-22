@@ -17,6 +17,12 @@ describe('validateArgs', () => {
         expect(() => validateArgs(filePath, functionName, args, params)).not.toThrow();
     });
 
+    it('should not throw error for nullable types', () => {
+        const params = [{ name: 'a', type: 'string | null', optional: false }];
+        const args = [null];
+        expect(() => validateArgs(filePath, functionName, args, params)).not.toThrow();
+    });
+
     it('should throw error for missing required argument', () => {
         const params = [{ name: 'a', type: 'string', optional: false }];
         const args: any[] = [];

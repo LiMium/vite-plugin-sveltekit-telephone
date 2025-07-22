@@ -15,6 +15,9 @@ export async function functionWithNoArgs(): Promise<string> {
 }
 
 export async function functionWithOptionalArg(name?: string): Promise<string> {
+  if (typeof(name) != "string" && typeof(name) != "undefined" ) {
+    throw new Error("Unexpected type of name:" + name)
+  }
   return `Hello, ${name || 'world'}!`;
 }
 

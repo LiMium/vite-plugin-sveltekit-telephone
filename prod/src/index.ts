@@ -103,7 +103,7 @@ export function validateArgs(filePath: string, functionName: string, args: any[]
   for (const [i, param] of expectedParams.entries()) {
     const arg = args[i];
 
-    if (arg === undefined || arg === null) {
+    if (arg === undefined) {
       if (param.optional) {
         continue;
       } else {
@@ -142,8 +142,13 @@ export function withContext<T>(context: Telephone.Context, fn: () => T): T {
   })
 }
 
+// This should match the definition in client.ts
+const UNDEFINED_SUBSTITUTION = `__TELEPHONE__UNDEFINED__alphaBetaGama_check123__`
+
 export async function handleRoute(functionMap: Record<string, Record<string, FunctionDetail>>, params: HandlerParams): Promise<any> {
-  const { filePath, functionName, args } = params.body;
+  const { filePath, functionName, args: argsIn } = params.body;
+  const argsString = JSON.stringify(argsIn) // .replaceAll(UNDEFINED_SUBSTITUTION, "undefined")
+  const args = JSON.parse(argsString, (k, v) => {return v == UNDEFINED_SUBSTITUTION ? undefined : v})
 
   const fileFunctions = functionMap[filePath];
   if (!fileFunctions) {

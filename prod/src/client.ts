@@ -1,8 +1,13 @@
+const UNDEFINED_SUBSTITUTION = '__TELEPHONE__UNDEFINED__alphaBetaGama_check123__'
+
 export async function makeRpcCall(filePath: string, functionName: string, args: any[]) {
   const response = await fetch('/_telephone', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filePath: filePath, functionName, args }),
+    body: JSON.stringify(
+      { filePath: filePath, functionName, args },
+      (_k, v) => v === undefined ? UNDEFINED_SUBSTITUTION : v,
+    ),
   });
 
   const data = await response.json();
