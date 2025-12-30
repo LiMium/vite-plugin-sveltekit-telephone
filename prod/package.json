@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-sveltekit-telephone-prod",
-  "version": "0.1.2",
+  "version": "0.2.0-d1",
   "description": "Telephone: Simple RPC for Sveltekit",
   "exports": {
     "." : "./dist/index.js",
@@ -17,9 +17,9 @@
   "license": "MIT",
   "files": ["dist/"],
   "devDependencies": {
-    "@types/node": "^20.19.8",
-    "typescript": "^5.3.3",
-    "vitest": "3.2.4"
+    "@types/node": "^20.19.27",
+    "typescript": "^5.9.3",
+    "vitest": "4.0.16"
   }
 }
 
